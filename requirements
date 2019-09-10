@@ -1,0 +1,5 @@
+gym
+cma
+tensorflow-gpu==2.0.0rc0
+numpy
+
