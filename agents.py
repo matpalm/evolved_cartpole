@@ -17,8 +17,8 @@ class NeuralAgent(object):
     def __init__(self):
         # build simple model
         inp = Input(shape=(4,))
-        hidden1 = Dense(8, activation='relu')(inp)
-        hidden2 = Dense(8, activation='relu')(hidden1)
+        hidden1 = Dense(4, activation='relu')(inp)
+        hidden2 = Dense(4, activation='relu')(hidden1)
         output = Dense(1, activation='sigmoid')(hidden2)
         self.model = Model(inp, output)
 
