@@ -5,6 +5,9 @@ import argparse
 import agents
 import numpy as np
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--input-weights', type=str, default=None,
