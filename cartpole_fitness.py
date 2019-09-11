@@ -15,10 +15,12 @@ class CartPoleFitness(object):
         for _ in range(10):  # num_trials ?
             observation = self.env.reset()
             done = False
+            episode_reward = 0
             while not done:
                 action = agent.decide_action(observation)
                 observation, reward, done, _info = self.env.step(action)
-                total_reward += reward
+                episode_reward += reward
                 if self.render:
                     self.env.render()
+            total_reward += episode_reward
         return total_reward
