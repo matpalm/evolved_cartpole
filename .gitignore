@@ -1,3 +1,6 @@
+*tsv
+*out
+solutions/
 .ipynb_checkpoints/
 outcmaes/
 __pycache__/
