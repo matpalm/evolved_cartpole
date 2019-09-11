@@ -1,10 +1,24 @@
 #!/usr/bin/env python3
 
+import argparse
 import cma
 import agents
 import cartpole_fitness
 import numpy as np
 import sys
+
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+parser = argparse.ArgumentParser(
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('--popsize', type=int, default=20,
+                    help='cma population size')
+parser.add_argument('--fitness-log-file', type=str, default='/dev/null',
+                    help="where to write epoch-fitness info")
+parser.add_argument('--weights-dir', type=str, default=None,
+                    help="if set, save per generation best weights numpy file here")
+opts = parser.parse_args()
 
 agent = agents.NeuralAgent()
 eg_weights = agent.get_flattened_weights_of_model()
@@ -15,10 +29,10 @@ cartpole = cartpole_fitness.CartPoleFitness()
 
 es = cma.CMAEvolutionStrategy([0] * num_weights,  # x0
                               1.0,                # sigma0
-                              {'popsize': 20})
+                              {'popsize': opts.popsize})
 
-fitnesses_log = open("cms_es_fitnesses.tsv", "w")
-print("epoch\tfitness", file=fitnesses_log)
+fitness_log_file = open(opts.fitness_log_file, "w")
+print("epoch\tfitness", file=fitness_log_file)
 
 epoch = 0
 while not es.stop():
@@ -31,25 +45,24 @@ while not es.stop():
     for member_idx, weights in enumerate(trial_weights):
         agent.set_weights_of_model(weights)
         fitness = cartpole.fitness(agent)
-        # print("F", epoch, member_idx, fitness)
         fitnesses.append(-fitness)
 
     # update es
     es.tell(trial_weights, fitnesses)
 
     # save best weights
-    np.save("solutions/%05d.npy" % epoch,
-            es.result[0])
+    if opts.weights_dir is not None:
+        np.save("%s/%05d.npy" % (opts.weights_dir, epoch), es.result[0])
 
     # give results
     epoch += 1
     for f in fitnesses:
-        print("\t".join(map(str, [epoch, f])), file=fitnesses_log)
-    fitnesses_log.flush()
+        print("%d\t%f" % (epoch, f), file=fitness_log_file)
+    fitness_log_file.flush()
     print("\t".join(map(str, ["F", epoch, fitnesses, np.min(fitnesses),
                               np.mean(fitnesses), np.max(fitnesses)])))
     es.result_pretty()
     sys.stdout.flush()
 
 es.disp()
-fitnesses_log.close()
+fitness_log_file.close()
