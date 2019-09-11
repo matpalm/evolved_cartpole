@@ -29,7 +29,7 @@ class NeuralAgent(object):
         shapes = u.weight_shapes_of(self.model)
         if flattened_weights.shape != (u.total_weights_of_shapes(shapes),):
             raise Exception("expected weights shaped (%d,) not %s" % (
-                total_weights_of_shapes(shapes), flattened_weights.shape))
+                u.total_weights_of_shapes(shapes), flattened_weights.shape))
         idx = 0
         weights_to_set = []
         for s in shapes:
