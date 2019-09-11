@@ -45,3 +45,21 @@ class NeuralAgent(object):
         action_prob = output[0][0]
         action = 1 if action_prob > 0.5 else 0
         return action
+
+
+class NeuralLiteAgent(object):
+
+    def __init__(self, tflite_file):
+        self.model = tf.lite.Interpreter(tflite_file)
+        self.model.allocate_tensors()
+        self.model_input = self.model.tensor(
+            self.model.get_input_details()[0]["index"])
+        self.model_output = self.model.tensor(
+            self.model.get_output_details()[0]["index"])
+
+    def decide_action(self, observation):
+        self.model_input()[0] = observation
+        self.model.invoke()
+        action_prob = self.model_output()[0][0]
+        action = 1 if action_prob > 0.5 else 0
+        return action
