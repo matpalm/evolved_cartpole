@@ -6,6 +6,9 @@ import numpy as np
 import argparse
 import sys
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--env-render', action='store_true',
