@@ -101,12 +101,12 @@ class SimpleGA(object):
 
 
 def np_new_member():
-    return np.random.normal(size=(20,))
+    member_size = random.randint(10, 30)
+    return np.random.normal(size=(member_size,))
 
 
 def np_crossover(p1, p2):
-    assert p1.shape == p2.shape
-    crossover_idx = random.randint(0, len(p1))
+    crossover_idx = random.randint(0, min(len(p1), len(p2)))
     c1 = np.concatenate([p1[:crossover_idx], p2[crossover_idx:]])
     c2 = np.concatenate([p2[:crossover_idx], p1[crossover_idx:]])
     return c1, c2
@@ -123,12 +123,8 @@ ga = SimpleGA(popn_size=10,
               proportion_new_members=0.2,
               proportion_elite=0.1)
 
-for _ in range(10000):
+for _ in range(100):
     ga.calc_fitnesses()
     elite = ga.get_elite_member()
-    print("ELITE", np.sum(elite), elite)
+    print("ELITE", len(elite), np.sum(elite))
     ga.breed_next_gen()
-
-
-raw_fitnesses = np.sum(ga.members, axis=1)
-print("raw_fitnesses", np.max(raw_fitnesses))
