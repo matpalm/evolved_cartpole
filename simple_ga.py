@@ -9,6 +9,7 @@ class SimpleGA(object):
 
     def __init__(self, popn_size,
                  new_member_fn,
+                 fitness_fn,
                  cross_over_fn,
                  proportion_new_members=0,
                  proportion_elite=0):
@@ -18,6 +19,8 @@ class SimpleGA(object):
         if proportion_new_members < 0 or proportion_new_members > 1:
             raise Exception("expect proportion_new_members to be (0, 1)")
         self.num_new_members = int(self.popn_size * proportion_new_members)
+
+        self.fitness_fn = fitness
 
         if proportion_elite < 0 or proportion_elite > 1:
             raise Exception("expect proportion_elite to be (0, 1)")
@@ -32,10 +35,14 @@ class SimpleGA(object):
     def get_members(self):
         return self.members
 
-    def set_raw_fitness_values(self, raw_fitness_values):
-        if len(raw_fitness_values) != self.popn_size:
-            raise Exception("%d fitnesses provided != popn_size of %d" % (
-                len(raw_fitness_values), self.popn_size))
+    def get_elite_member(self):
+        if self.selection_array is None:
+            raise Exception(
+                "no selection_array; need to call calc_fitnesses?")
+        return self.members[np.argmax(self.selection_array)]
+
+    def calc_fitnesses(self):
+        raw_fitness_values = [self.fitness_fn(m) for m in self.members]
         self.selection_array = np.zeros_like(raw_fitness_values)
         normaliser = (self.popn_size * (self.popn_size+1)) / 2
         for rank, idx in enumerate(np.argsort(raw_fitness_values)):
@@ -46,7 +53,7 @@ class SimpleGA(object):
         if self.selection_array is None:
             # TODO: just make breed explicit after set_raw_fitness ?
             raise Exception(
-                "need to call set_raw_fitness_values() before each breed_next_gen() call")
+                "need to call calc_fitnesses() before each breed_next_gen() call")
 
         # prep next generation
         next_gen_members = []
@@ -78,12 +85,6 @@ class SimpleGA(object):
         self.members = next_gen_members
         self.selection_array = None
 
-    def elite_member(self):
-        if self.selection_array is None:
-            raise Exception(
-                "no selection_array; need to call set_raw_fitness_values?")
-        return self.members[np.argmax(self.selection_array)]
-
     def _select_member_idx(self):
         return np.random.choice(range(self.popn_size),
                                 p=self.selection_array)
@@ -111,17 +112,21 @@ def np_crossover(p1, p2):
     return c1, c2
 
 
+def fitness(m):
+    return np.sum(m)
+
+
 ga = SimpleGA(popn_size=10,
               new_member_fn=np_new_member,
+              fitness_fn=fitness,
               cross_over_fn=np_crossover,
               proportion_new_members=0.2,
               proportion_elite=0.1)
 
 for _ in range(10000):
-    raw_fitnesses = np.sum(ga.get_members(), axis=1)
-    # print("raw_fitnesses", np.max(raw_fitnesses))  # , raw_fitnesses)
-    ga.set_raw_fitness_values(raw_fitnesses)
-    print("ELITE", ga.elite_member())
+    ga.calc_fitnesses()
+    elite = ga.get_elite_member()
+    print("ELITE", np.sum(elite), elite)
     ga.breed_next_gen()
 
 
