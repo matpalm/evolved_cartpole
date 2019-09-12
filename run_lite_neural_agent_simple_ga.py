@@ -6,6 +6,9 @@ import agents
 import cartpole_fitness
 import util as u
 import numpy as np
+import convert_to_tflite
+import io
+import random
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -20,36 +23,35 @@ parser.add_argument('--weights-dir', type=str, default=None,
                     help="if set, save per generation best weights numpy file here")
 opts = parser.parse_args()
 
-
 cartpole = cartpole_fitness.CartPoleFitness()
 
-
-def new_agent():
-    return agents.NeuralAgent()
-
-
-def calc_cartpole_fitness(member):
-    return cartpole.fitness(member)
+# in the neural_lite_agent the representation is the bytes of
+# tflite file
 
 
-def crossover_agents(p1, p2):
-    p1_weights = p1.get_flattened_weights_of_model()
-    p2_weights = p2.get_flattened_weights_of_model()
+def new_member_bytes():
+    random_agent = agents.NeuralAgent()
+    flat_buffer_bytes = convert_to_tflite.convert_to_file_bytes(random_agent)
+    return flat_buffer_bytes
 
-    c1_weights, c2_weights = u.numpy_array_crossover(p1_weights, p2_weights)
 
-    c1 = agents.NeuralAgent()
-    c1.set_weights_of_model(c1_weights)
-    c2 = agents.NeuralAgent()
-    c2.set_weights_of_model(c2_weights)
+def calc_cartpole_fitness(flat_buffer_bytes):
+    agent = agents.NeuralLiteAgent(tflite_bytes=flat_buffer_bytes)
+    return cartpole.fitness(agent)
 
+
+def crossover_member_bytes(p1, p2):
+    assert len(p1) == len(p2)
+    crossover_idx = random.randint(0, len(p1))
+    c1 = p1[:crossover_idx] + p2[crossover_idx:]
+    c2 = p2[:crossover_idx] + p1[crossover_idx:]
     return c1, c2
 
 
 ga = simple_ga.SimpleGA(popn_size=opts.popsize,
-                        new_member_fn=new_agent,
+                        new_member_fn=new_member_bytes,
                         fitness_fn=calc_cartpole_fitness,
-                        cross_over_fn=crossover_agents,
+                        cross_over_fn=crossover_member_bytes,
                         proportion_new_members=0.1,
                         proportion_elite=0.1)
 
@@ -66,8 +68,8 @@ for epoch in range(100):
 
     if opts.weights_dir is not None:
         elite = ga.get_elite_member()
-        np.save("%s/%03d" % (opts.weights_dir, epoch),
-                elite.get_flattened_weights_of_model())
+        filepath = "%s/%03d.tflite" % (opts.weights_dir, epoch)
+        open(filepath, "wb").write(elite)
 
     ga.breed_next_gen()
 

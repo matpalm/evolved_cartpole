@@ -16,11 +16,11 @@ class NeuralAgent(object):
 
     def __init__(self):
         # build simple model
-        inp = Input(shape=(4,))
-        hidden1 = Dense(4, activation='relu')(inp)
-        hidden2 = Dense(4, activation='relu')(hidden1)
-        output = Dense(1, activation='sigmoid')(hidden2)
-        self.model = Model(inp, output)
+        inp = Input(shape=(4,), name='i')
+        hidden1 = Dense(4, activation='relu', name='h1')(inp)
+        hidden2 = Dense(4, activation='relu', name='h2')(hidden1)
+        output = Dense(1, activation='sigmoid', name='o')(hidden2)
+        self.model = Model(inp, output, name='m')
 
     def get_flattened_weights_of_model(self):
         return np.concatenate([w.flatten() for w in self.model.get_weights()])
