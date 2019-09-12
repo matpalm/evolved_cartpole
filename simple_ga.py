@@ -60,9 +60,6 @@ class SimpleGA(object):
             next_gen_members.append(self.new_member_fn())
 
         # keep some number of elite members from last population
-        # print("members", self.members)
-        # print("self.selection_array", self.selection_array)
-        # print("elite_idxs", np.argsort(self.selection_array)[-self.num_elite:])
         if self.num_elite > 0:
             elite_idxs = np.argsort(self.selection_array)[-self.num_elite:]
             for i in elite_idxs:

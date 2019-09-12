@@ -10,6 +10,10 @@ def np_new_member():
     return np.random.normal(size=(member_size,))
 
 
+def sum_fitness(member):
+    return np.sum(member)
+
+
 def np_crossover(p1, p2):
     crossover_idx = random.randint(0, min(len(p1), len(p2)))
     c1 = np.concatenate([p1[:crossover_idx], p2[crossover_idx:]])
@@ -17,13 +21,9 @@ def np_crossover(p1, p2):
     return c1, c2
 
 
-def fitness(m):
-    return np.sum(m)
-
-
 ga = simple_ga.SimpleGA(popn_size=10,
                         new_member_fn=np_new_member,
-                        fitness_fn=fitness,
+                        fitness_fn=sum_fitness,
                         cross_over_fn=np_crossover,
                         proportion_new_members=0.2,
                         proportion_elite=0.1)
