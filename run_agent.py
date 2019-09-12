@@ -34,7 +34,7 @@ for trial_idx in range(opts.trials):
         if opts.weights is not None:
             agent.set_weights_of_model(np.load(opts.weights))
     elif opts.agent == 'neural_lite':
-        agent = agents.NeuralLiteAgent(opts.lite_weights)
+        agent = agents.NeuralLiteAgent(tflite_file=opts.lite_weights)
     else:
         raise Exception("unexpected agent type [%s]" % opts.agent)
     print("%d\t%d" % (trial_idx, evaluator.fitness(agent)))

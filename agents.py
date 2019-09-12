@@ -49,8 +49,14 @@ class NeuralAgent(object):
 
 class NeuralLiteAgent(object):
 
-    def __init__(self, tflite_file):
-        self.model = tf.lite.Interpreter(tflite_file)
+    def __init__(self, tflite_file=None, tflite_bytes=None):
+        if tflite_file is not None:
+            self.model = tf.lite.Interpreter(model_path=tflite_file)
+        elif tflite_bytes is not None:
+            self.model = tf.lite.Interpreter(model_content=tflite_bytes)
+        else:
+            raise Exception(
+                "need to specify one of tflite_file or tflite_bytes")
         self.model.allocate_tensors()
         self.model_input = self.model.tensor(
             self.model.get_input_details()[0]["index"])
