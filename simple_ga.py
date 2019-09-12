@@ -7,9 +7,12 @@ import random
 
 class SimpleGA(object):
 
-    def __init__(self, popn_size, new_member_fn,
+    def __init__(self, popn_size,
+                 new_member_fn,
+                 cross_over_fn,
                  proportion_new_members=0,
                  proportion_elite=0):
+
         self.popn_size = popn_size
 
         if proportion_new_members < 0 or proportion_new_members > 1:
@@ -20,16 +23,10 @@ class SimpleGA(object):
             raise Exception("expect proportion_elite to be (0, 1)")
         self.num_elite = int(self.popn_size * proportion_elite)
 
-        # create first member as a way of determining member size
         self.new_member_fn = new_member_fn
-        first_member = new_member_fn()
-        assert len(first_member.shape) == 1
-        self.member_size = first_member.shape[0]
+        self.cross_over_fn = cross_over_fn
 
-        self.members = np.empty((popn_size, self.member_size))
-        for i in range(popn_size):
-            self.members[i] = first_member if i == 0 else new_member_fn()
-
+        self.members = [new_member_fn() for _ in range(popn_size)]
         self.selection_array = None
 
     def get_members(self):
@@ -69,16 +66,16 @@ class SimpleGA(object):
 
         # fill rest with cross over generated members
         while len(next_gen_members) < self.popn_size:
-            parent1_idx = self._select_member_idx()
-            parent2_idx = self._select_member_idx()
-            child1, child2 = self._crossover(parent1_idx, parent2_idx)
+            p1_idx = self._select_member_idx()
+            p2_idx = self._select_member_idx()
+            child1, child2 = self.cross_over_fn(self.members[p1_idx],
+                                                self.members[p2_idx])
             next_gen_members.append(child1)
             if len(next_gen_members) < self.popn_size:
                 next_gen_members.append(child2)
 
         # stack into single array and invalidate old selection array
-        self.members = np.stack(next_gen_members)
-       # print("NEXT GEN MEMBERS", self.members)
+        self.members = next_gen_members
         self.selection_array = None
 
     def _select_member_idx(self):
@@ -93,13 +90,24 @@ class SimpleGA(object):
         c2 = np.concatenate([p2[:crossover_idx], p1[crossover_idx:]])
         return c1, c2
 
+# ------------------------------------------------
 
-def new_member():
+
+def np_new_member():
     return np.random.normal(size=(20,))
 
 
+def np_crossover(p1, p2):
+    assert p1.shape == p2.shape
+    crossover_idx = random.randint(0, len(p1))
+    c1 = np.concatenate([p1[:crossover_idx], p2[crossover_idx:]])
+    c2 = np.concatenate([p2[:crossover_idx], p1[crossover_idx:]])
+    return c1, c2
+
+
 ga = SimpleGA(popn_size=10,
-              new_member_fn=new_member,
+              new_member_fn=np_new_member,
+              cross_over_fn=np_crossover,
               proportion_new_members=0.2,
               proportion_elite=0.1)
 
