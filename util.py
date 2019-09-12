@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 def num_weights(shape):
@@ -16,20 +17,9 @@ def total_weights_of_shapes(shapes):
     return sum([num_weights(s) for s in shapes])
 
 
-def get_flattened_weights_of_model(model):
-    return np.concatenate([w.flatten() for w in model.get_weights()])
-
-
-def set_weights_of_model(model, flattened_weights):
-    shapes = weight_shapes_of(model)
-    if flattened_weights.shape != (total_weights_of_shapes(shapes),):
-        raise Exception("expected weights shaped (%d,) not %s" % (
-            total_weights_of_shapes(shapes), flattened_weights.shape))
-    idx = 0
-    weights_to_set = []
-    for s in shapes:
-        weight_slice = flattened_weights[idx: idx+num_weights(s)]
-        weights_to_set.append(
-            np.array(weight_slice, dtype=np.float32).reshape(s))
-        idx += num_weights(s)
-    model.set_weights(weights_to_set)
+def numpy_array_crossover(p1, p2):
+    assert p1.shape == p2.shape
+    crossover_idx = random.randint(0, len(p1))
+    c1 = np.concatenate([p1[:crossover_idx], p2[crossover_idx:]])
+    c2 = np.concatenate([p2[:crossover_idx], p1[crossover_idx:]])
+    return c1, c2
