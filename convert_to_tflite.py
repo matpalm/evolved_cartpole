@@ -7,7 +7,7 @@ import numpy as np
 
 def convert_to_file_bytes(agent):
     converter = tf.lite.TFLiteConverter.from_keras_model(agent.model)
-    #converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
+    converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
     lite_model_bytes = converter.convert()
     return lite_model_bytes
 

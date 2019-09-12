@@ -1,6 +1,7 @@
 # given an agent, eval fitness against cartpole
 
 import gym
+from PIL import Image
 
 
 class CartPoleFitness(object):
@@ -22,5 +23,8 @@ class CartPoleFitness(object):
                 episode_reward += reward
                 if self.render:
                     self.env.render()
+                    #rgb_array = self.env.render(mode='rgb_array')
+                    #img = Image.fromarray(rgb_array)
+                    # img.save("cartpole.png")
             total_reward += episode_reward
         return total_reward

@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--popsize', type=int, default=20,
                     help='cma population size')
 parser.add_argument('--fitness-log-file', type=str, default='/dev/null',
-                    help="where to write epoch-fitness info")
+                    help="where to write generation-fitness info")
 parser.add_argument('--weights-dir', type=str, default=None,
                     help="if set, save per generation best weights numpy file here")
 opts = parser.parse_args()
@@ -53,22 +53,19 @@ ga = simple_ga.SimpleGA(popn_size=opts.popsize,
                         proportion_new_members=0.1,
                         proportion_elite=0.1)
 
-fitness_log_file = open(opts.fitness_log_file, "w")
-print("epoch\tfitness", file=fitness_log_file)
 
-for epoch in range(100):
+fitness_log = u.Log(opts.fitness_log_file)
+
+for generation in range(100):
 
     ga.calc_fitnesses()
 
-    for f in ga.raw_fitness_values:
-        print("%d\t%f" % (epoch, f), file=fitness_log_file)
-    fitness_log_file.flush()
+    fitness_log.log(generation, np.max(ga.raw_fitness_values))
 
     if opts.weights_dir is not None:
+        u.ensure_dir_exists(opts.weights_dir)
         elite = ga.get_elite_member()
-        np.save("%s/%03d" % (opts.weights_dir, epoch),
+        np.save("%s/%03d" % (opts.weights_dir, generation),
                 elite.get_flattened_weights_of_model())
 
     ga.breed_next_gen()
-
-fitness_log_file.close()

@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import os
 
 
 def num_weights(shape):
@@ -23,3 +24,24 @@ def numpy_array_crossover(p1, p2):
     c1 = np.concatenate([p1[:crossover_idx], p2[crossover_idx:]])
     c2 = np.concatenate([p2[:crossover_idx], p1[crossover_idx:]])
     return c1, c2
+
+
+def ensure_dir_exists(d):
+    if not os.path.exists(d):
+        os.makedirs(d)
+
+
+def ensure_dir_exists_for_file(f):
+    ensure_dir_exists(os.path.dirname(f))
+
+
+class Log(object):
+
+    def __init__(self, fname):
+        ensure_dir_exists_for_file(fname)
+        self.f = open(fname, "w")
+        self.f.write("generation\telite_fitness\n")
+
+    def log(self, generation, fitness):
+        self.f.write("%d\t%f\n" % (generation, fitness))
+        self.f.flush()
