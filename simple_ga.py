@@ -39,10 +39,11 @@ class SimpleGA(object):
         return self.members[np.argmax(self.selection_array)]
 
     def calc_fitnesses(self):
-        raw_fitness_values = [self.fitness_fn(m) for m in self.members]
-        self.selection_array = np.zeros_like(raw_fitness_values)
+        # keep raw fitness values as member for debug only
+        self.raw_fitness_values = [self.fitness_fn(m) for m in self.members]
+        self.selection_array = np.zeros_like(self.raw_fitness_values)
         normaliser = (self.popn_size * (self.popn_size+1)) / 2
-        for rank, idx in enumerate(np.argsort(raw_fitness_values)):
+        for rank, idx in enumerate(np.argsort(self.raw_fitness_values)):
             self.selection_array[idx] = (rank+1) / normaliser
         assert np.isclose(np.sum(self.selection_array), 1.0)
 
