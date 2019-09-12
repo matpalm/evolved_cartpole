@@ -78,6 +78,12 @@ class SimpleGA(object):
         self.members = next_gen_members
         self.selection_array = None
 
+    def elite_member(self):
+        if self.selection_array is None:
+            raise Exception(
+                "no selection_array; need to call set_raw_fitness_values?")
+        return self.members[np.argmax(self.selection_array)]
+
     def _select_member_idx(self):
         return np.random.choice(range(self.popn_size),
                                 p=self.selection_array)
@@ -111,11 +117,13 @@ ga = SimpleGA(popn_size=10,
               proportion_new_members=0.2,
               proportion_elite=0.1)
 
-while True:  # for _ in range(10000):
+for _ in range(10000):
     raw_fitnesses = np.sum(ga.get_members(), axis=1)
-    print("raw_fitnesses", np.max(raw_fitnesses))  # , raw_fitnesses)
+    # print("raw_fitnesses", np.max(raw_fitnesses))  # , raw_fitnesses)
     ga.set_raw_fitness_values(raw_fitnesses)
+    print("ELITE", ga.elite_member())
     ga.breed_next_gen()
+
 
 raw_fitnesses = np.sum(ga.members, axis=1)
 print("raw_fitnesses", np.max(raw_fitnesses))
